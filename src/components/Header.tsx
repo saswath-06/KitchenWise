@@ -1,19 +1,17 @@
 'use client';
-import React, { useState } from 'react';
-import Input from './ui/Input';
+import { useAuth } from '@/src/hooks/useAuth';
 import Button from './ui/Button';
+import Input from './ui/Input';
+import { useState } from 'react';
 
-interface HeaderProps {
-  onSearch: (query: string) => void;
-  onLogout: () => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onSearch, onLogout }) => {
+const Header = () => {
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    // Implement search functionality
+    console.log('Searching for:', searchQuery);
   };
 
   return (
@@ -37,7 +35,10 @@ const Header: React.FC<HeaderProps> = ({ onSearch, onLogout }) => {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button variant="secondary" onClick={onLogout}>
+            <span className="text-gray-600">
+              Welcome, {user?.username}
+            </span>
+            <Button variant="secondary" onClick={logout}>
               Logout
             </Button>
           </div>

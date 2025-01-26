@@ -1,133 +1,72 @@
 'use client';
 import React, { useState } from 'react';
-import apiService from '../services/api';
+import { useAuth } from '@/src/hooks/useAuth';
+import Button from './ui/Button';
+import Input from './ui/Input';
 
-interface LoginFormProps {
-  onLogin: () => void;
-}
-
-interface FormData {
-  email: string;
-  password: string;
-  name: string;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+export default function LoginForm() {
+  const { login, register } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    name: ''
+    password: ''
   });
-  const [error, setError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       if (isRegister) {
-        const response = await apiService.register(
-          formData.email,
-          formData.password,
-          formData.name
-        );
-        localStorage.setItem('token', response.token);
+        await register(formData.email, formData.password);
       } else {
-        const response = await apiService.login(formData.email, formData.password);
-        localStorage.setItem('token', response.token);
+        await login(formData.email, formData.password);
       }
-      onLogin();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="card w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isRegister ? 'Create Account' : 'Login'}
-        </h2>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 text-red-500 p-3 rounded">
+          {error}
+        </div>
+      )}
+      
+      <Input
+        type="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        required
+      />
 
-        <form onSubmit={handleSubmit}>
-          {isRegister && (
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Name</label>
-              <input
-                type="text"
-                name="name"
-                className="input-field"
-                value={formData.name}
-                onChange={handleInputChange}
-                required={isRegister}
-              />
-            </div>
-          )}
+      <Input
+        type="password"
+        placeholder="Password"
+        value={formData.password}
+        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        required
+      />
 
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              className="input-field"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+      <Button type="submit" disabled={loading} isLoading={loading}>
+        {isRegister ? 'Register' : 'Login'}
+      </Button>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              className="input-field"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            className="btn-primary w-full mb-4"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Loading...' : (isRegister ? 'Register' : 'Login')}
-          </button>
-        </form>
-
-        <button
-          onClick={() => setIsRegister(!isRegister)}
-          className="text-blue-600 hover:text-blue-800 text-center w-full"
-          disabled={isLoading}
-        >
-          {isRegister
-            ? 'Already have an account? Login'
-            : "Don't have an account? Register"}
-        </button>
-      </div>
-    </div>
+      <button
+        type="button"
+        onClick={() => setIsRegister(!isRegister)}
+        className="text-blue-500 hover:text-blue-700 text-sm w-full"
+      >
+        {isRegister ? 'Already have an account? Login' : 'Need an account? Register'}
+      </button>
+    </form>
   );
-};
-
-export default LoginForm;
+}
