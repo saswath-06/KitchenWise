@@ -11,4 +11,16 @@ const compat = new FlatCompat({
 
 const eslintConfig = [...compat.extends("next/core-web-vitals")];
 
-export default eslintConfig;
+export default {
+  extends: ['next/core-web-vitals', 'eslint:recommended', 'plugin:react/recommended'],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
+  rules: {
+    'react/react-in-jsx-scope': 'off',
+    'no-unused-vars': 'warn',
+  },
+};
+
